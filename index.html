@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Image to Link Converter</title>
+  <style>
+    body {font-family:sans-serif;text-align:center;padding:30px;background:#f6f7fb;}
+    input,button {padding:10px;margin:5px;border-radius:6px;}
+    button {background:#0078ff;color:white;border:none;cursor:pointer;}
+    #preview img {max-width:200px;margin-top:15px;border-radius:8px;}
+  </style>
+</head>
+<body>
+  <h2>📸 Image to Direct Link</h2>
+  <p>Select an image and upload to get a shareable link:</p>
+
+  <input type="file" id="fileInput" accept="image/*">
+  <button id="uploadBtn">Upload</button>
+
+  <div id="status"></div>
+  <div id="preview"></div>
+
+<script>
+const cloudName = "YOUR_CLOUD_NAME";      // Cloudinary cloud name
+const uploadPreset = "YOUR_UPLOAD_PRESET"; // Unsigned preset
+
+document.getElementById('uploadBtn').addEventListener('click', async () => {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) { alert('Select an image first!'); return; }
+
+  document.getElementById('status').innerText = 'Uploading...';
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+  const data = new FormData();
+  data.append('file', file);
+  data.append('upload_preset', uploadPreset);
+
+  try {
+    const res = await fetch(url, { method: 'POST', body: data });
+    const json = await res.json();
+    if (json.secure_url) {
+      document.getElementById('status').innerHTML = '✅ Upload successful!<br>Direct link:';
+      document.getElementById('preview').innerHTML = `
+        <input style="width:80%" value="${json.secure_url}" readonly>
+        <br><img src="${json.secure_url}">
+      `;
+    } else {
+      document.getElementById('status').innerText = 'Error: ' + JSON.stringify(json);
+    }
+  } catch (err) {
+    document.getElementById('status').innerText = 'Error: ' + err.message;
+  }
+});
+</script>
+</body>
+</html>
